@@ -1,24 +1,27 @@
 import { createClient } from 'redis';
 import * as dotenv from "dotenv";
-import {ClientCertificateCredential} from "@azure/identity";
+import {ClientSecretCredential} from "@azure/identity";
 dotenv.config();
 
 
 
 async function main(){
-const credential = new ClientCertificateCredential(process.env.VINAY_TENANT_ID, process.env.VINAY_CLIENT_ID,process.env.VINAY_cERTIFICATEPATH)
+const credential = new ClientSecretCredential(process.env.AZURE_TENANT_ID, process.env.AZURE_CLIENT_ID,process.env.AZURE_CLIENT_SECRET)
 try{
     let accessToken = await credential.getToken("https://*.cacheinfra.windows.net:10225/appid/.default")
     console.log("access Token",accessToken);
 
-    const client = createClient({username: "walmartserviceprincipal", password: accessToken.token, url: `redis://walmartserviceprincipal:${accessToken.token}@${process.env.VINAY_HOSTNAME}:6379` })
+    const client = createClient({username: "kaghiya-test-service-principal", password: accessToken.token, url: `redis://kaghiya-test-service-principal:${accessToken.token}@${process.env.REDIS_HOSTNAME}:6379` })
     client.on('error', (err) => console.log('Redis Client Error', err));
     //'redis://alice:foobared@awesome.redis.server:6380'
     await client.connect();
-
-    await client.set('key', 'value');
-    // const value = await client.get('key');
-    // console.log("value", value);
+    await client.auth({
+      username: "kaghiya-test-service-principal",
+      password:accessToken.token
+    });
+   await client.set('Az:key343', 'value');
+   const value = await client.get('Az:key343');
+   console.log("value", value);
 }
 catch(e){
       console.log("error during get token -");
