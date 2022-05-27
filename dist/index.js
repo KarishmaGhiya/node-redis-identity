@@ -20,6 +20,7 @@ async function main() {
         await client.set('Az:key343', 'value');
         const value = await client.get('Az:key343');
         console.log("value", value);
+        client.disconnect();
     }
     catch (e) {
         console.log("error during get token -");
