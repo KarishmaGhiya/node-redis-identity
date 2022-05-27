@@ -10,8 +10,10 @@ const credential = new ClientSecretCredential(process.env.AZURE_TENANT_ID, proce
 try{
     let accessToken = await credential.getToken("https://*.cacheinfra.windows.net:10225/appid/.default")
     console.log("access Token",accessToken);
-
-    const client = createClient({username: "kaghiya-test-service-principal", password: accessToken.token, url: `redis://kaghiya-test-service-principal:${accessToken.token}@${process.env.REDIS_HOSTNAME}:6379` })
+   // option for tls socket
+    const client = createClient({username: "kaghiya-test-service-principal", password: accessToken.token, url: `redis://kaghiya-test-service-principal:${accessToken.token}@${process.env.REDIS_HOSTNAME}:6380`, socket:{tls:true} })
+    //option for non-tls socket
+    // const client = createClient({username: "kaghiya-test-service-principal", password: accessToken.token, url: `redis://kaghiya-test-service-principal:${accessToken.token}@${process.env.REDIS_HOSTNAME}:6379`})
     client.on('error', (err) => console.log('Redis Client Error', err));
     //'redis://alice:foobared@awesome.redis.server:6380'
     await client.connect();
