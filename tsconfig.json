@@ -1,9 +1,9 @@
 {
-    "compilerOptions": {
-      "target": "ESNext",
-      "module": "commonjs",
-      "moduleResolution": "Node",
-      "sourceMap": true,
-      "outDir": "./dist"
-    }
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "outDir": "./dist"
+  }
 }
