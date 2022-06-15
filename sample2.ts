@@ -29,7 +29,7 @@ async function main() {
       tls: true,
     },
   });
-  redisClient.connect();
+  await redisClient.connect();
   for (let i = 0; i < 3; i++) {
     try {
       // Set a value against your key in the Azure Redis Cache.

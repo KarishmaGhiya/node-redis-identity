@@ -17,18 +17,18 @@ async function main() {
   );
   console.log("access Token", accessToken);
   //Option 1 - Create redis client and connect to the Azure Cache for Redis over the TLS port using the access token as password.
-  //   const client = createClient({
-  //     username: process.env.REDIS_SERVICE_PRINCIPAL_NAME,
-  //     password: accessToken.token,
-  //     url: `redis://${process.env.REDIS_HOSTNAME}:6380`,
-  //     socket: { tls: true },
-  //   });
-  //Option 2 - Create redis client and connect to the Azure Cache for Redis over the non-TLS port using the access token as password.
   const client = (0, redis_1.createClient)({
     username: process.env.REDIS_SERVICE_PRINCIPAL_NAME,
     password: accessToken.token,
-    url: `redis://${process.env.REDIS_HOSTNAME}:6379`,
+    url: `redis://${process.env.REDIS_HOSTNAME}:6380`,
+    socket: { tls: true },
   });
+  //Option 2 - Create redis client and connect to the Azure Cache for Redis over the non-TLS port using the access token as password.
+  //   const client = createClient({
+  //     username: process.env.REDIS_SERVICE_PRINCIPAL_NAME,
+  //     password: accessToken.token,
+  //     url: `redis://${process.env.REDIS_HOSTNAME}:6379`,
+  //   });
   client.on("error", (err) => console.log("Redis Client Error", err));
   await client.connect();
   // Set a value against your key in the Azure Redis Cache.
