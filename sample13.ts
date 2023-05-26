@@ -10,6 +10,11 @@ async function returnPassword(credential: TokenCredential) {
     // Fetch an Azure AD token to be used for authentication. This token will be used as the password.
     return credential.getToken(redisScope);
 }
+function randomNumber(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 async function main() {
   // Construct a Token Credential from Azure Identity library, e.g. ClientSecretCredential / ClientCertificateCredential / ManagedIdentityCredential, etc.
@@ -20,7 +25,8 @@ async function main() {
 
   async function updateToken() {
     accessTokenCache = await returnPassword(credential);
-    id = setTimeout(updateToken, ((accessTokenCache.expiresOnTimestamp- 120*1000)) - Date.now());
+    let randomTimestamp = randomNumber(120000,300000);
+    id = setTimeout(updateToken, ((accessTokenCache.expiresOnTimestamp- randomTimestamp)) - Date.now());
     if(redisClient){
         console.log("Auth called...")
         await redisClient.auth({username: process.env.REDIS_SERVICE_PRINCIPAL_NAME,
