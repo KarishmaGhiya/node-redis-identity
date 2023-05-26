@@ -5,22 +5,32 @@ const identity_1 = require("@azure/identity");
 const dotenv = require("dotenv");
 dotenv.config();
 async function returnPassword(credential) {
-    try {
-        // Fetch an Azure AD token to be used for authentication. This token will be used as the password.
-        return credential.getToken("https://*.cacheinfra.windows.net:10225/appid/.default");
-    }
-    catch (e) {
-        throw e;
-    }
+    // The current scope is for public preview and may change for GA release.
+    const redisScope = "acca5fbb-b7e4-4009-81f1-37e38fd66d78/.default";
+    // Fetch an Azure AD token to be used for authentication. This token will be used as the password.
+    return credential.getToken(redisScope);
 }
 async function main() {
     // Construct a Token Credential from Azure Identity library, e.g. ClientSecretCredential / ClientCertificateCredential / ManagedIdentityCredential, etc.
-    const credential = new identity_1.ClientSecretCredential(process.env.AZURE_TENANT_ID, process.env.AZURE_CLIENT_ID, process.env.AZURE_CLIENT_SECRET);
-    let accessTokenObject = await returnPassword(credential);
+    const credential = new identity_1.DefaultAzureCredential();
+    let accessTokenCache = undefined;
+    let id;
+    let redisClient;
+    async function updateToken() {
+        accessTokenCache = await returnPassword(credential);
+        id = setTimeout(updateToken, (10));
+        if (redisClient) {
+            console.log("Auth called...");
+            await redisClient.auth({ username: process.env.REDIS_SERVICE_PRINCIPAL_NAME,
+                password: accessToken.token });
+        }
+    }
+    await updateToken();
+    let accessToken = { ...accessTokenCache };
     // Create node-redis client and connect to the Azure Cache for Redis over the TLS port using the access token as password.
-    let redisClient = (0, redis_1.createClient)({
+    redisClient = (0, redis_1.createClient)({
         username: process.env.REDIS_SERVICE_PRINCIPAL_NAME,
-        password: accessTokenObject.token,
+        password: accessToken.token,
         url: `redis://${process.env.REDIS_HOSTNAME}:6380`,
         socket: {
             tls: true,
@@ -31,33 +41,33 @@ async function main() {
     for (let i = 0; i < 3; i++) {
         try {
             // Set a value against your key in the Azure Redis Cache.
-            await redisClient.set("Az:mykey", "value123"); // Returns a promise which resolves to "OK" when the command succeeds.
+            await redisClient.set("Az:mykey", "value123");
             // Fetch value of your key in the Azure Redis Cache.
             console.log("redis key:", await redisClient.get("Az:mykey"));
-            // Close the Node-redis Client Connection
-            redisClient.disconnect();
             break;
         }
         catch (e) {
             console.log("error during redis get", e.toString());
-            if (accessTokenObject.expiresOnTimestamp <= Date.now()) {
+            if ((accessToken.expiresOnTimestamp <= Date.now())) {
                 await redisClient.disconnect();
-                accessTokenObject = await returnPassword(credential);
+                accessToken = { ...accessTokenCache };
                 redisClient = (0, redis_1.createClient)({
                     username: process.env.REDIS_SERVICE_PRINCIPAL_NAME,
-                    password: accessTokenObject.token,
+                    password: accessToken.token,
                     url: `redis://${process.env.REDIS_HOSTNAME}:6380`,
                     socket: {
                         tls: true,
+                        keepAlive: 0
                     },
                 });
             }
         }
     }
+    clearTimeout(id);
 }
 main().catch((err) => {
     console.log("error code: ", err.code);
     console.log("error message: ", err.message);
     console.log("error stack: ", err.stack);
 });
-//# sourceMappingURL=sample2.js.map
+//# sourceMappingURL=sample13.js.map

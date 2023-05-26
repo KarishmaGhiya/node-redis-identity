@@ -8,7 +8,7 @@ async function main() {
     // Construct a Token Credential from Identity library, e.g. ClientSecretCredential / ClientCertificateCredential / ManagedIdentityCredential, etc.
     const credential = new identity_1.ClientSecretCredential(process.env.AZURE_TENANT_ID, process.env.AZURE_CLIENT_ID, process.env.AZURE_CLIENT_SECRET);
     // Fetch an AAD token to be used for authentication. This token will be used as the password.
-    let accessToken = await credential.getToken("https://*.cacheinfra.windows.net:10225/appid/.default");
+    let accessToken = await credential.getToken("acca5fbb-b7e4-4009-81f1-37e38fd66d78/.default");
     console.log("access Token", accessToken);
     //Option 1 - Create redis client and connect to the Azure Cache for Redis over the TLS port using the access token as password.
     const client = (0, redis_1.createClient)({
@@ -37,4 +37,4 @@ main().catch((err) => {
     console.log("error message: ", err.message);
     console.log("error stack: ", err.stack);
 });
-//# sourceMappingURL=sample1.js.map
+//# sourceMappingURL=sample11.js.map
